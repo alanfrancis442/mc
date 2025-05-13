@@ -45,6 +45,7 @@ export default class Canvas {
     createCamera() {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera.position.z = 10;
+        this.camera.position.y = 5;
         this.scene.add(this.camera);
     }
 
@@ -120,6 +121,10 @@ export default class Canvas {
         this.orbitControls.dampingFactor = 0.25;
         this.orbitControls.enableZoom = true;
         this.orbitControls.enablePan = true;
+    }
+
+    addToScene(object: THREE.Object3D) {
+        this.scene.add(object);
     }
 
     render() {

@@ -8,3 +8,7 @@ type Sizes = {
     width: number;
     height: number;
 };
+type BlockData = {
+    id: number,
+    instanceId: number | null,
+}[][][]
