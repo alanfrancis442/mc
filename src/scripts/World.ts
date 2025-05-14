@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { SimplexNoise } from 'three/examples/jsm/Addons.js';
 
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -6,12 +7,20 @@ const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 export default class World extends THREE.Group {
     size: Sizes;
     data: BlockData = [];
-    constructor(size: Sizes = { width: 32, height: 32 }) {
+    color: number;
+    threshold: number = 0.5;
+    worldParams = {
+        offset: 0,
+        scale: 1,
+        magnitude: 2,
+    }
+    constructor(size: Sizes = { width: 32, height: 32 }, color: number = 0x00ff00) {
         super();
         this.size = size;
+        this.color = color;
     }
 
-    generateTerrain() {
+    initTerrain() {
         this.data = [];
         for (let x = 0; x < this.size.width; x++) {
             const layer = [];
@@ -19,7 +28,7 @@ export default class World extends THREE.Group {
                 const row = [];
                 for (let z = 0; z < this.size.width; z++) {
                     row.push({
-                        id: 1,
+                        id: 0,
                         instanceId: null
                     });
                 }
@@ -29,9 +38,34 @@ export default class World extends THREE.Group {
         }
     }
 
+    generateTerrain() {
+        this.initTerrain();
+        const noise = new SimplexNoise();
+
+        // Loop through the x and z coordinates (top-down view)
+        for (let x = 0; x < this.size.width; x++) {
+            for (let z = 0; z < this.size.width; z++) {
+                // Generate height using noise
+                const value = noise.noise(x / 30, z / 30);
+                const scaledNoiseValue = value * this.worldParams.magnitude;
+                let height = Math.floor(scaledNoiseValue * this.size.height);
+
+                // Clamp the height
+                height = Math.max(0, Math.min(height, this.size.height - 1));
+
+                // Set blocks from ground up to the calculated height
+                for (let y = 0; y <= height; y++) {
+                    // Actually set block IDs here
+                    this.setBlockId(x, y, z, 1);  // Set ID to 1 to make it visible
+                }
+            }
+        }
+    }
+
     generateMeshes() {
         this.clear();
         const maxCount = this.size.width * this.size.height * this.size.width;
+        material.color.set(this.color);
         const mesh = new THREE.InstancedMesh(geometry, material, maxCount);
         mesh.count = 0;
         const matrix = new THREE.Matrix4();
