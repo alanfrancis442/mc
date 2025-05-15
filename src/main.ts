@@ -9,6 +9,7 @@ const stats = new Stats();
 document.body.appendChild(stats.dom);
 canvas.addOrbitControls();
 canvas.addGridHelper();
+canvas.addLight();
 
 const world = new World();
 world.generateTerrain();

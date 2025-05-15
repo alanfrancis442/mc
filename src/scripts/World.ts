@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { SimplexNoise } from 'three/examples/jsm/Addons.js';
+import { SeedNoise } from './SeedNoise';
 
 const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 
 export default class World extends THREE.Group {
     size: Sizes;
@@ -10,9 +11,10 @@ export default class World extends THREE.Group {
     color: number;
     threshold: number = 0.5;
     worldParams = {
+        seed: 0,
         offset: 0,
-        scale: 1,
-        magnitude: 2,
+        scale: 30,
+        magnitude: 0.5,
     }
     constructor(size: Sizes = { width: 32, height: 32 }, color: number = 0x00ff00) {
         super();
@@ -40,14 +42,15 @@ export default class World extends THREE.Group {
 
     generateTerrain() {
         this.initTerrain();
-        const noise = new SimplexNoise();
+        const seedNoise = new SeedNoise(this.worldParams.seed);
+        const noise = new SimplexNoise(seedNoise);
 
         // Loop through the x and z coordinates (top-down view)
         for (let x = 0; x < this.size.width; x++) {
             for (let z = 0; z < this.size.width; z++) {
                 // Generate height using noise
-                const value = noise.noise(x / 30, z / 30);
-                const scaledNoiseValue = value * this.worldParams.magnitude;
+                const value = noise.noise(x / this.worldParams.scale, z / this.worldParams.scale);
+                const scaledNoiseValue = this.worldParams.offset + value * this.worldParams.magnitude;
                 let height = Math.floor(scaledNoiseValue * this.size.height);
 
                 // Clamp the height
