@@ -12,3 +12,12 @@ type BlockData = {
     id: number,
     instanceId: number | null,
 }[][][]
+
+type FaceTextures = {
+    right?: string;
+    left?: string;
+    top?: string;
+    bottom?: string;
+    front?: string;
+    back?: string;
+};

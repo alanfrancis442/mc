@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { SimplexNoise } from 'three/examples/jsm/Addons.js';
 import { SeedNoise } from './SeedNoise';
-import { blocks } from './Blocks';
+import { blocks, resources } from './Blocks';
 
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshStandardMaterial();
@@ -10,17 +10,26 @@ export default class World extends THREE.Group {
     size: Sizes;
     data: BlockData = [];
     color: number;
-    threshold: number = 0.5;
+    // threshold: number = 0.5;
     worldParams = {
         seed: 0,
         offset: 0,
         scale: 30,
         magnitude: 0.5,
     }
+
     constructor(size: Sizes = { width: 32, height: 32 }, color: number = 0x00ff00) {
         super();
         this.size = size;
         this.color = color;
+    }
+
+    generate() {
+        const seedNoise = new SeedNoise(this.worldParams.seed);
+        this.initTerrain();
+        this.generateResources(seedNoise);
+        this.generateTerrain(seedNoise);
+        this.generateMeshes();
     }
 
     initTerrain() {
@@ -41,9 +50,7 @@ export default class World extends THREE.Group {
         }
     }
 
-    generateTerrain() {
-        this.initTerrain();
-        const seedNoise = new SeedNoise(this.worldParams.seed);
+    generateTerrain(seedNoise: SeedNoise) {
         const noise = new SimplexNoise(seedNoise);
 
         // Loop through the x and z coordinates (top-down view)
@@ -58,27 +65,50 @@ export default class World extends THREE.Group {
                 height = Math.max(0, Math.min(height, this.size.height - 1));
 
                 // Set blocks from ground up to the calculated height
-                for (let y = 0; y <= height; y++) {
+                for (let y = 0; y <= this.size.height; y++) {
                     if (y === height) {
                         this.setBlockId(x, y, z, blocks.grass.id);
                     }
-                    else if (y < height - 3) {
-                        this.setBlockId(x, y, z, blocks.stone.id);
-                    }
-                    else if (y < height) {
+                    else if (y < height && this.getBlock(x, y, z)?.id === blocks.null_block.id) {
                         this.setBlockId(x, y, z, blocks.dirt.id);
+                    }
+                    else if (y > height) {
+                        this.setBlockId(x, y, z, blocks.null_block.id);
                     }
                 }
             }
         }
     }
 
+    generateResources(seedNoise: SeedNoise) {
+        const noise = new SimplexNoise(seedNoise);
+        resources.forEach((resource) => {
+            for (let x = 0; x < this.size.width; x++) {
+                for (let y = 0; y < this.size.height; y++) {
+                    for (let z = 0; z < this.size.width; z++) {
+                        const value = noise.noise3d(x / resource.xScale, y / resource.yScale, z / resource.zScale);
+                        if (value > resource.threshold) {
+                            this.setBlockId(x, y, z, resource.id);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     generateMeshes() {
         this.clear();
         const maxCount = this.size.width * this.size.height * this.size.width;
-        // material.color.set(this.color);
-        const mesh = new THREE.InstancedMesh(geometry, material, maxCount);
-        mesh.count = 0;
+        let meshes: { [key: number]: THREE.InstancedMesh } = {};
+        Object.values(blocks).filter((block) => block.id !== blocks.null_block.id).forEach((block) => {
+            const blockMesh = new THREE.InstancedMesh(geometry, block.material || material, maxCount);
+            blockMesh.count = 0;
+            blockMesh.name = block.name;
+            blockMesh.castShadow = true;
+            blockMesh.receiveShadow = true;
+            meshes[block.id] = blockMesh;
+        });
+
         const matrix = new THREE.Matrix4();
         for (let x = 0; x < this.size.width; x++) {
             for (let y = 0; y < this.size.height; y++) {
@@ -88,12 +118,13 @@ export default class World extends THREE.Group {
                         continue;
                     }
                     const blockid = block.id;
+                    if (blockid === blocks.null_block.id) {
+                        continue;
+                    }
+                    const mesh = meshes[blockid];
                     const instanceId = mesh.count;
 
-                    const blockData = Object.values(blocks).find((block) => block.id === blockid);
-                    if (blockData) {
-                        mesh.setColorAt(instanceId, new THREE.Color(blockData.color));
-                    }
+
                     if (blockid !== blocks.null_block.id && this.isBlockViewable(x, y, z)) {
                         matrix.setPosition(
                             x - this.size.width / 2,
@@ -107,7 +138,7 @@ export default class World extends THREE.Group {
                 }
             }
         }
-        this.add(mesh);
+        this.add(...Object.values(meshes));
     }
 
     //helper functions

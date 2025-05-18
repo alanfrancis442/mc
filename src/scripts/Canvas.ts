@@ -90,7 +90,9 @@ export default class Canvas {
     addLight() {
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight.position.set(5, 5, -5);
+        directionalLight.position.set(3, 3, -3);
+        directionalLight.castShadow = true;
+        // directionalLight.intensity = 1.5;
         this.scene.add(ambientLight);
         this.scene.add(directionalLight);
     }
