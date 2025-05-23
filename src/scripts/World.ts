@@ -18,7 +18,7 @@ export default class World extends THREE.Group {
         magnitude: 0.5,
     }
 
-    constructor(size: Sizes = { width: 32, height: 32 }, color: number = 0x00ff00) {
+    constructor(size: Sizes = { width: 64, height: 32 }, color: number = 0x00ff00) {
         super();
         this.size = size;
         this.color = color;

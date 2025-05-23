@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import type Player from './player';
 
 export default class Canvas {
     element: HTMLCanvasElement;
@@ -21,11 +22,11 @@ export default class Canvas {
         this.createCamera();
         this.createRender();
         this.setSizes();
+        this.addOrbitControls();
         window.addEventListener('resize', () => {
-            console.log('resize');
             this.onResize();
         });
-        // this.addGridHelper();
+        this.addGridHelper();
     }
 
     onResize() {
@@ -132,9 +133,21 @@ export default class Canvas {
         this.scene.add(object);
     }
 
-    render() {
+    render(player?: Player) {
+        const dt = this.clock.getDelta();
         this.time = this.clock.getElapsedTime();
 
-        this.renderer.render(this.scene, this.camera);
+        // Update controls based on player lock state
+        if (player?.controls.isLocked) {
+            // Player controls are active
+            player.updatePlayerPosition(dt);
+            this.orbitControls.enabled = false;
+            this.renderer.render(this.scene, player.camera);
+        } else {
+            // Orbit controls are active
+            this.orbitControls.enabled = true;
+            this.orbitControls.update();
+            this.renderer.render(this.scene, this.camera);
+        }
     }
 }
