@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import type Player from './player';
+import type PhysicsWorld from './PhysicsWorld';
+import type World from './World';
 
 export default class Canvas {
     element: HTMLCanvasElement;
@@ -133,15 +135,17 @@ export default class Canvas {
         this.scene.add(object);
     }
 
-    render(player?: Player) {
+    render(player?: Player, physicsWorld?: PhysicsWorld,world?: World   ) {
         const dt = this.clock.getDelta();
         this.time = this.clock.getElapsedTime();
-
         // Update controls based on player lock state
         if (player?.controls.isLocked) {
             // Player controls are active
             player.updatePlayerPosition(dt);
             this.orbitControls.enabled = false;
+            if (player && physicsWorld && world) {
+                physicsWorld.update(dt, player, world);
+            }
             this.renderer.render(this.scene, player.camera);
         } else {
             // Orbit controls are active

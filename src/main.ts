@@ -5,9 +5,10 @@ import World from './scripts/World'
 import { createGUI } from './scripts/uiHelper';
 import * as THREE from 'three'
 import Player from './scripts/player';
+import PhysicsWorld from './scripts/PhysicsWorld';
 const canvas = new Canvas();
 const player = new Player(canvas.scene);
-
+const physicsWorld = new PhysicsWorld(canvas.scene);
 const stats = new Stats();
 document.body.appendChild(stats.dom);
 canvas.addOrbitControls();
@@ -21,7 +22,7 @@ createGUI(world);
 canvas.renderer.shadowMap.enabled = true;
 canvas.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 function render() {
-  canvas.render(player);
+  canvas.render(player,physicsWorld,world);
   stats.update();
   requestAnimationFrame(render);
 }

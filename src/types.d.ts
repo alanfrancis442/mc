@@ -21,3 +21,9 @@ type FaceTextures = {
     front?: string;
     back?: string;
 };
+
+type Position = {
+    x: number;
+    y: number;
+    z: number;
+};

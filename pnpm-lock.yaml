@@ -11,6 +11,9 @@ importers:
       '@types/three':
         specifier: ^0.176.0
         version: 0.176.0
+      cannon-es:
+        specifier: ^0.20.0
+        version: 0.20.0
       leva:
         specifier: ^0.10.0
         version: 0.10.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -450,6 +453,9 @@ packages:
   attr-accept@2.2.5:
     resolution: {integrity: sha512-0bDNnY/u6pPwHDMoF0FieU354oBi0a8rD9FcsLwzcGWbc8KS8KPIi7y+s13OlVY+gMWc/9xEMUgNE6Qm8ZllYQ==}
     engines: {node: '>=4'}
+
+  cannon-es@0.20.0:
+    resolution: {integrity: sha512-eZhWTZIkFOnMAJOgfXJa9+b3kVlvG+FX4mdkpePev/w/rP5V8NRquGyEozcjPfEoXUlb+p7d9SUcmDSn14prOA==}
 
   colord@2.9.3:
     resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
@@ -1038,6 +1044,8 @@ snapshots:
   assign-symbols@1.0.0: {}
 
   attr-accept@2.2.5: {}
+
+  cannon-es@0.20.0: {}
 
   colord@2.9.3: {}
 
