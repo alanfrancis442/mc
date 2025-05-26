@@ -27,3 +27,10 @@ type Position = {
     y: number;
     z: number;
 };
+
+type Collision = {
+    block: Position;
+    contactPoint: Position;
+    normal: THREE.Vector3;
+    overlap: number;
+};

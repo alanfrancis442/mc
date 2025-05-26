@@ -7,20 +7,20 @@ export default class Player {
     mesh: THREE.Mesh;
     inputs = new THREE.Vector3();
     velocity = new THREE.Vector3();
-    position = new THREE.Vector3();
     playerBounceHelper!: THREE.Mesh;
 
     //player properties
     speed = 5.0;
     height = 2.0;
     radius = 1.5;
-        
+    onGround = false
+    jumpForce = 5;
+    #worldVelocity = new THREE.Vector3(); 
 
     constructor(scene: THREE.Scene) {
-        this.position.set(0, -10, 0);
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.controls = new PointerLockControls(this.camera, document.body);
-        this.camera.position.set(this.position.x, this.position.y, this.position.z);
+        this.camera.position.set(0, 3, 0);
         scene.add(this.camera);
 
         const geometry = new THREE.BoxGeometry(this.radius, this.height, this.radius);
@@ -52,8 +52,31 @@ export default class Player {
         }
     }
 
-    getPosition(): THREE.Vector3 {
+    get position(): THREE.Vector3 {
         return this.camera.position;
+    }
+   
+    get WorldVelocity(): THREE.Vector3 {
+       this.#worldVelocity.copy(this.velocity);
+       this.#worldVelocity.applyEuler(
+        new THREE.Euler(
+            0,
+            this.camera.rotation.y,
+            0
+        )
+       )
+       return this.#worldVelocity;
+    }
+   
+    applyWorldDeltaVelocity(deltaVelocity: THREE.Vector3) {
+        deltaVelocity.applyEuler(
+            new THREE.Euler(
+                0,
+                -this.camera.rotation.y,
+                0
+            )
+        )
+        this.velocity.add(deltaVelocity);
     }
     
     updatePlayerPosition(dt:number) {
@@ -63,12 +86,13 @@ export default class Player {
         this.velocity.z = this.inputs.z * adjustedSpeed;
         this.controls.moveRight(this.velocity.x);
         this.controls.moveForward(this.velocity.z);
-        this.position.copy(this.camera.position);   
+         this.position.y += this.velocity.y*dt
         this.mesh.position.copy(this.position);
         this.playerBounceHelper.position.copy(this.position);
     }   
 
     handleKeyboardInput(event: KeyboardEvent) {
+        if(event.repeat) return;
         if(!this.controls.isLocked) {
             this.controls.lock();
             console.log('mouse locked');
@@ -88,6 +112,13 @@ export default class Player {
             case 'd':
                 this.inputs.x = 1;
                 break;
+            case ' '://for jumping 
+            if(this.onGround) {
+                console.log('jumping');
+                this.velocity.y += this.jumpForce;
+                this.onGround = false;
+            }
+                break;  
         }
     }
 

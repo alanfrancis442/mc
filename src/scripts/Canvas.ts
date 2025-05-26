@@ -141,10 +141,11 @@ export default class Canvas {
         // Update controls based on player lock state
         if (player?.controls.isLocked) {
             // Player controls are active
-            player.updatePlayerPosition(dt);
             this.orbitControls.enabled = false;
+            player.updatePlayerPosition(dt);
             if (player && physicsWorld && world) {
                 physicsWorld.update(dt, player, world);
+                console.log('on ground',player.onGround);
             }
             this.renderer.render(this.scene, player.camera);
         } else {

@@ -14,12 +14,15 @@ const contactGeometry = new THREE.SphereGeometry(0.1);
 const contactMaterial = new THREE.MeshBasicMaterial({
     color: 0x00ff00,
     transparent: true,
-    opacity: 0.5,
+    opacity: 1,
 });
 
 export default class PhysicsWorld {
     helpers: THREE.Group;
-
+    gravity = 12.5;
+    simulation = 200;
+    timeStep = 1 / this.simulation;
+    accumulator = 0;
     constructor(scene: THREE.Scene) {
         this.helpers = new THREE.Group();
         scene.add(this.helpers);
@@ -30,14 +33,6 @@ export default class PhysicsWorld {
         collisionHelper.position.copy(position);
         this.helpers.add(collisionHelper);
 
-        setTimeout(() => {
-            this.helpers.remove(collisionHelper);
-            // Dispose of geometry and material to prevent memory leaks
-            collisionHelper.geometry.dispose();
-            if (collisionHelper.material instanceof THREE.Material) {
-                collisionHelper.material.dispose();
-            }
-        }, 1500);
     }
 
     addContactPointerHelper(position: Position) {
@@ -45,14 +40,6 @@ export default class PhysicsWorld {
         contactHelper.position.copy(position);
         this.helpers.add(contactHelper);
 
-        setTimeout(() => {
-            this.helpers.remove(contactHelper);
-            // Dispose of geometry and material to prevent memory leaks
-            contactHelper.geometry.dispose();
-            if (contactHelper.material instanceof THREE.Material) {
-                contactHelper.material.dispose();
-            }
-        }, 1500);
     }
 
     // Convert world coordinates to grid coordinates
@@ -110,7 +97,6 @@ export default class PhysicsWorld {
                 }
             }
         }
-        console.log(candidates.length);
 
         return candidates;
     }
@@ -144,7 +130,7 @@ export default class PhysicsWorld {
                 if (overlapY < overlapXZ) {
                     normal = new THREE.Vector3(0, -Math.sign(dy), 0);
                     overlap = overlapY;
-                    // player.onGround = true;
+                    player.onGround = true;
                 } else {
                     normal = new THREE.Vector3(-dx, 0, -dz).normalize();
                     overlap = overlapXZ;
@@ -161,14 +147,36 @@ export default class PhysicsWorld {
             }
         }
 
-        console.log(`Narrowphase Collisions: ${collisions.length}`);
-
         return collisions;
     }
 
+    resolveCollisions(collisions: Collision[], player: Player) {
+        collisions.sort((a, b) => {
+            return a.overlap < b.overlap ? 1 : -1;
+        })
+
+        //isPointInsideBox(
+        for (const collision of collisions) {
+            if (!this.isPointInsideBox(collision.contactPoint, player)) {
+                continue;
+            }
+            let deltaPosition = collision.normal.clone()
+            deltaPosition.multiplyScalar(collision.overlap)
+            player.position.add(deltaPosition)
+
+            let magnitude = player.WorldVelocity.dot(collision.normal)
+            let velocityAdjustment = collision.normal.clone().multiplyScalar(magnitude)
+            player.applyWorldDeltaVelocity(velocityAdjustment.negate())
+        }
+    }
+
     detectCollisions(player: Player, world: World) {
+        player.onGround = false;
         const candidates = this.boradPhase(player, world);
         const collisions = this.narrowPhase(candidates, player);
+        if (collisions.length > 0) {
+            this.resolveCollisions(collisions, player);
+        }
     }
 
     isPointInsideBox(point: Position, player: Player) {
@@ -183,7 +191,24 @@ export default class PhysicsWorld {
 
 
     update(dt: number, player: Player, world: World) {
-        this.detectCollisions(player, world);
+        this.accumulator += dt;
+        // Remember if player was on ground at any point during the physics steps
+        let wasOnGround = player.onGround;
+        
+        while (this.accumulator >= this.timeStep) {
+            this.helpers.clear();
+            player.velocity.y -= this.gravity * this.timeStep;
+            this.detectCollisions(player, world);
+            
+            // If player became on ground during this step, remember it
+            if (player.onGround) {
+                wasOnGround = true;
+            }
+            
+            this.accumulator -= this.timeStep;
+        }
+        
+        // Apply the remembered ground state after all physics steps
+        player.onGround = wasOnGround;
     }
-
 }
