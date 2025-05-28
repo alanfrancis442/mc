@@ -18,7 +18,9 @@ canvas.addLight();
 const world = new World();
 world.generate();
 canvas.addToScene(world);
-createGUI(world);
+if(import.meta.env.MODE === 'development') {
+    createGUI(world);
+}
 canvas.renderer.shadowMap.enabled = true;
 canvas.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 function render() {
