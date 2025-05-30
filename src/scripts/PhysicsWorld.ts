@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import World from './World';
+import World from './WorldChunk';
 import { blocks } from './Blocks';
 import type Player from "./player";
 

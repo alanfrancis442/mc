@@ -22,6 +22,12 @@ type FaceTextures = {
     back?: string;
 };
 
+type WorldParams = {
+    seed: number;
+    offset: number;
+    scale: number;
+    magnitude: number;
+}
 type Position = {
     x: number;
     y: number;

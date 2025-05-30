@@ -2,8 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import type Player from './player';
 import type PhysicsWorld from './PhysicsWorld';
-import type World from './World';
-
+import World from './World';
 export default class Canvas {
     element: HTMLCanvasElement;
     scene: THREE.Scene;
