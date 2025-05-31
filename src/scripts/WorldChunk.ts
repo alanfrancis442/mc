@@ -11,7 +11,7 @@ export default class WorldChunk extends THREE.Group {
     data: BlockData = [];
     worldParams: WorldParams;
     // threshold: number = 0.5;
-    constructor(size: Sizes = { width: 64, height: 32 }, worldParams: WorldParams) {
+    constructor(size: Sizes = { width: 32, height: 32 }, worldParams: WorldParams) {
         super();
         this.size = size;
         this.worldParams = worldParams;

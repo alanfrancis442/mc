@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import World from './WorldChunk';
+import World from './World';
 import { blocks } from './Blocks';
 import type Player from "./player";
 
@@ -45,18 +45,18 @@ export default class PhysicsWorld {
     // Convert world coordinates to grid coordinates
     worldToGrid(worldPos: { x: number, y: number, z: number }, world: World) {
         return {
-            x: Math.floor(worldPos.x + world.size.width / 2),
-            y: Math.floor(worldPos.y + world.size.height / 2),
-            z: Math.floor(worldPos.z + world.size.width / 2)
+            x: Math.floor(worldPos.x + world.chunkSize.width / 2),
+            y: Math.floor(worldPos.y + world.chunkSize.height / 2),
+            z: Math.floor(worldPos.z + world.chunkSize.width / 2)
         };
     }
 
     // Convert grid coordinates to world coordinates
     gridToWorld(gridPos: { x: number, y: number, z: number }, world: World) {
         return {
-            x: gridPos.x - world.size.width / 2,
-            y: gridPos.y - world.size.height / 2,
-            z: gridPos.z - world.size.width / 2
+            x: gridPos.x - world.chunkSize.width / 2,
+            y: gridPos.y - world.chunkSize.height / 2,
+            z: gridPos.z - world.chunkSize.width / 2
         };
     }
 
