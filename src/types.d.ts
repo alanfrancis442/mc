@@ -34,6 +34,10 @@ type Position = {
     z: number;
 };
 
+type ChunkPosition = {
+    x: number;
+    z: number;
+}
 type Collision = {
     block: Position;
     contactPoint: Position;

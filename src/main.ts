@@ -24,6 +24,7 @@ canvas.renderer.shadowMap.enabled = true;
 canvas.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 function render() {
   canvas.render(player,physicsWorld,world);
+  world.update(player);
   stats.update();
   requestAnimationFrame(render);
 }
