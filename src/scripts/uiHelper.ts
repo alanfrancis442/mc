@@ -9,6 +9,7 @@ export function createGUI(world: World) {
     gui.add(world.worldParams, "offset", 0, 1).name("Offset");
     gui.add(world.worldParams, "scale", 10, 100).name("Scale");
     gui.add(world.worldParams, "magnitude", 0, 1).name("Magnitude");
+    gui.add(world,"asyncLoading").name("Async Loading");
 
 
     //resources controls

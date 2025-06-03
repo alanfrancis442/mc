@@ -10,6 +10,7 @@ export default class WorldChunk extends THREE.Group {
     size: Sizes;
     data: BlockData = [];
     worldParams: WorldParams;
+    loaded: boolean = false;
     // threshold: number = 0.5;
     constructor(size: Sizes = { width: 32, height: 32 }, worldParams: WorldParams) {
         super();
@@ -23,6 +24,7 @@ export default class WorldChunk extends THREE.Group {
         this.generateResources(seedNoise);
         this.generateTerrain(seedNoise);
         this.generateMeshes();
+        this.loaded = true;
     }
 
     initTerrain() {

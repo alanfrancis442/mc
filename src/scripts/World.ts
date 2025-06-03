@@ -10,16 +10,18 @@ export default class World extends THREE.Group {
         magnitude: 0.5,
     }
 
+    asyncLoading = false;
+
     chunkData = {
         x:0,
         z:0
     }
 
-    drawDistance = 1;
+    drawDistance = 2;
 
     chunkSize:Sizes={width:32,height:32};
     constructor(seend:number=0) {   
-        super();
+        super();    
     }
 
     worldToChunkCoordinates(position:Position){
@@ -68,7 +70,7 @@ export default class World extends THREE.Group {
     getBlock(x:number,y:number,z:number){
         const chunkcoord = this.worldToChunkCoordinates({x,y,z});
         const chunk = this.getChunk(chunkcoord.chunkCord.x,chunkcoord.chunkCord.z);
-        if(!chunk) return null;
+        if(!chunk || !(chunk as WorldChunk).loaded) return null;
         return (chunk as WorldChunk).getBlock(chunkcoord.blockCord.x,chunkcoord.blockCord.y,chunkcoord.blockCord.z);
     }
 
@@ -136,7 +138,13 @@ export default class World extends THREE.Group {
                 x:chunk.x,
                 z:chunk.z
             }
-            chunkInstance.generate();
+            if(this.asyncLoading){
+                requestIdleCallback(()=>chunkInstance.generate(),{
+                    timeout:1000
+                });
+            }else{
+                chunkInstance.generate();
+            }
             this.add(chunkInstance);
         });
     }

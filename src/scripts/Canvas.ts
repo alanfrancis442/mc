@@ -28,6 +28,7 @@ export default class Canvas {
             this.onResize();
         });
         this.addGridHelper();
+        this.addFog();
     }
 
     onResize() {
@@ -99,6 +100,10 @@ export default class Canvas {
         this.scene.add(directionalLight);
     }
 
+    addFog() {
+        const fog = new THREE.Fog(0xffffff, 30, 100);
+        this.scene.fog = fog;
+    }
     addGridHelper() {
         const gridHelper = new THREE.GridHelper(10, 10);
         this.scene.add(gridHelper);
