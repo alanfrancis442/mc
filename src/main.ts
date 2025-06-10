@@ -17,14 +17,14 @@ canvas.addLight();
 const world = new World();
 world.generate();
 canvas.addToScene(world);
-if(import.meta.env.MODE === 'development') {
-    createGUI(world);
+if (import.meta.env.MODE === 'development') {
+  createGUI(world);
 }
 canvas.renderer.shadowMap.enabled = true;
 canvas.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 function render() {
-  canvas.render(player,physicsWorld,world);
-  world.update(player);
+  canvas.render(player, physicsWorld, world);
+
   stats.update();
   requestAnimationFrame(render);
 }

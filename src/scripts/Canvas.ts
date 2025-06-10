@@ -139,7 +139,7 @@ export default class Canvas {
         this.scene.add(object);
     }
 
-    render(player?: Player, physicsWorld?: PhysicsWorld,world?: World   ) {
+    render(player?: Player, physicsWorld?: PhysicsWorld, world?: World) {
         const dt = this.clock.getDelta();
         this.time = this.clock.getElapsedTime();
         // Update controls based on player lock state
@@ -149,7 +149,9 @@ export default class Canvas {
             player.updatePlayerPosition(dt);
             if (player && physicsWorld && world) {
                 physicsWorld.update(dt, player, world);
-                console.log('on ground',player.onGround);
+                player.update(world);
+                world.update(player);
+                console.log('on ground', player.onGround);
             }
             this.renderer.render(this.scene, player.camera);
         } else {

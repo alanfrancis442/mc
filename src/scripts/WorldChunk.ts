@@ -52,7 +52,7 @@ export default class WorldChunk extends THREE.Group {
         for (let x = 0; x < this.size.width; x++) {
             for (let z = 0; z < this.size.width; z++) {
                 // Generate height using noise
-                const value = noise.noise((this.position.x+x) / this.worldParams.scale, (this.position.z+z) / this.worldParams.scale);
+                const value = noise.noise((this.position.x + x) / this.worldParams.scale, (this.position.z + z) / this.worldParams.scale);
                 const scaledNoiseValue = this.worldParams.offset + value * this.worldParams.magnitude;
                 let height = Math.floor(scaledNoiseValue * this.size.height);
 
@@ -81,7 +81,7 @@ export default class WorldChunk extends THREE.Group {
             for (let x = 0; x < this.size.width; x++) {
                 for (let y = 0; y < this.size.height; y++) {
                     for (let z = 0; z < this.size.width; z++) {
-                        const value = noise.noise3d((this.position.x+x) / resource.xScale, (this.position.y+y) / resource.yScale, (this.position.z+z) / resource.zScale);
+                        const value = noise.noise3d((this.position.x + x) / resource.xScale, (this.position.y + y) / resource.yScale, (this.position.z + z) / resource.zScale);
                         if (value > resource.threshold) {
                             this.setBlockId(x, y, z, resource.id);
                         }
@@ -189,11 +189,11 @@ export default class WorldChunk extends THREE.Group {
         return false;
     }
     disposeInstance() {
-        if(this.children.length === 0) return;
-        console.log(this);
+        if (this.children.length === 0) return;
+        // console.log(this);
         this.traverse((child) => {
             if (child instanceof THREE.InstancedMesh) {
-                if(child.dispose) child.dispose();
+                if (child.dispose) child.dispose();
                 this.remove(child);
             }
             this.clear();
