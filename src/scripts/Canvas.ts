@@ -128,11 +128,17 @@ export default class Canvas {
     }
 
     addOrbitControls() {
+        // Create OrbitControls only if they're needed
+        // Using the renderer's domElement is fine for OrbitControls
         this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
         this.orbitControls.enableDamping = true;
         this.orbitControls.dampingFactor = 0.25;
         this.orbitControls.enableZoom = true;
         this.orbitControls.enablePan = true;
+
+        // Disable OrbitControls by default when first loaded
+        // They will be enabled only when pointer lock is not active
+        this.orbitControls.enabled = false;
     }
 
     addToScene(object: THREE.Object3D) {
@@ -142,22 +148,32 @@ export default class Canvas {
     render(player?: Player, physicsWorld?: PhysicsWorld, world?: World) {
         const dt = this.clock.getDelta();
         this.time = this.clock.getElapsedTime();
+
         // Update controls based on player lock state
         if (player?.controls.isLocked) {
-            // Player controls are active
-            this.orbitControls.enabled = false;
+            // Player controls are active - disable OrbitControls completely
+            if (this.orbitControls) {
+                this.orbitControls.enabled = false;
+            }
+
+            // Update player physics and position
             player.updatePlayerPosition(dt);
             if (player && physicsWorld && world) {
                 physicsWorld.update(dt, player, world);
                 player.update(world);
                 world.update(player);
-                console.log('on ground', player.onGround);
             }
+
+            // Render the scene using player camera
             this.renderer.render(this.scene, player.camera);
         } else {
-            // Orbit controls are active
-            this.orbitControls.enabled = true;
-            this.orbitControls.update();
+            // When pointer is not locked, use OrbitControls if they exist
+            if (this.orbitControls) {
+                this.orbitControls.enabled = true;
+                this.orbitControls.update();
+            }
+
+            // Render the scene using the default camera
             this.renderer.render(this.scene, this.camera);
         }
     }

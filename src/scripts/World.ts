@@ -74,6 +74,14 @@ export default class World extends THREE.Group {
         return (chunk as WorldChunk).getBlock(chunkcoord.blockCord.x, chunkcoord.blockCord.y, chunkcoord.blockCord.z);
     }
 
+    removeBlock(position: Position) {
+        const chunkcoord = this.worldToChunkCoordinates(position);
+        const chunk = this.getChunk(chunkcoord.chunkCord.x, chunkcoord.chunkCord.z);
+        if (!chunk || !(chunk as WorldChunk).loaded) return;
+        (chunk as WorldChunk).removeBlock({ x: chunkcoord.blockCord.x, y: chunkcoord.blockCord.y, z: chunkcoord.blockCord.z });
+    }
+
+
     disposeChunk() {
         if (this.children.length === 0) return;
         this.traverse((child) => {

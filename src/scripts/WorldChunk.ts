@@ -99,6 +99,7 @@ export default class WorldChunk extends THREE.Group {
             const blockMesh = new THREE.InstancedMesh(geometry, block.material || material, maxCount);
             blockMesh.count = 0;
             blockMesh.name = block.name;
+            blockMesh.userData.blockId = block.id;
             blockMesh.castShadow = true;
             blockMesh.receiveShadow = true;
             meshes[block.id] = blockMesh;
@@ -137,6 +138,34 @@ export default class WorldChunk extends THREE.Group {
     }
 
     //helper functions
+
+    deleteBlockInstance(x: number, y: number, z: number) {
+        const block = this.getBlock(x, y, z);
+        if (block && block.instanceId) {
+            const instanceId = block.instanceId;
+            if (instanceId !== null) {
+                const mesh = this.getObjectByProperty('userData.blockId', block.id);
+                if (mesh instanceof THREE.InstancedMesh) {
+                    mesh.count--;
+                    mesh.setMatrixAt(instanceId, new THREE.Matrix4());
+                    mesh.instanceMatrix.needsUpdate = true;
+                    this.setBlockInstanceId(x, y, z, block.instanceId);
+                    this.setBlockId(x, y, z, blocks.null_block.id);
+                    console.log(`Deleted block at (${x}, ${y}, ${z}) with instanceId ${instanceId}`);
+                }
+            }
+        }
+    }
+
+    removeBlock(position: Position) {
+        const { x, y, z } = position;
+        const block = this.getBlock(x, y, z);
+        if (block && block.id !== blocks.null_block.id) {
+            this.deleteBlockInstance(x, y, z);
+            this.setBlockId(x, y, z, blocks.null_block.id);
+            console.log(`Removed block at (${x}, ${y}, ${z})`);
+        }
+    }
 
     // Get a block at the specified coordinates
     getBlock(x: number, y: number, z: number) {

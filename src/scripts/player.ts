@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type World from './World';
-import Controls from './Controls';
+import type Controls from './Controls';
 
 export default class Player {
     camera: THREE.PerspectiveCamera;
@@ -17,12 +17,12 @@ export default class Player {
     jumpForce = 5;
     #worldVelocity = new THREE.Vector3();
 
-    constructor(scene: THREE.Scene) {
+    constructor(scene: THREE.Scene, controls: Controls) {
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera.position.set(0, 3, 0);
         scene.add(this.camera);
 
-        this.controls = new Controls(this.camera);
+        this.controls = controls;
 
         const geometry = new THREE.BoxGeometry(this.radius, this.height, this.radius);
         const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: false });
@@ -72,6 +72,11 @@ export default class Player {
             this.velocity.y += this.jumpForce;
             this.onGround = false;
         }
+    }
+
+    removeBlock(point: THREE.Vector3, world: World) {
+        // world.
+
     }
 
     updatePlayerPosition(dt: number) {

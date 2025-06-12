@@ -11,20 +11,38 @@ const selectionHelperMaterial = new THREE.MeshStandardMaterial({
 });
 
 export default class Controls {
-    pointerLock: PointerLockControls;
-    camera: THREE.PerspectiveCamera;
+    world: World;
+    pointerLock!: PointerLockControls;
+    camera!: THREE.PerspectiveCamera;
     inputs = new THREE.Vector3();
     playerSelectionHelper!: THREE.Mesh;
-    raycaster: THREE.Raycaster;
+    raycaster!: THREE.Raycaster;
     selectedCoordinate!: THREE.Vector3 | null | undefined;
 
-    constructor(camera: THREE.PerspectiveCamera) {
-        this.camera = camera;
-        this.pointerLock = new PointerLockControls(this.camera, document.body);
+    constructor(world: World) {
+        this.world = world;
         this.raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 0, 10);
 
         document.addEventListener('keydown', this.handleKeyboardInput.bind(this));
         document.addEventListener('keyup', this.handleKeyUp.bind(this));
+        document.addEventListener('mousedown', this.onMouseDown.bind(this));
+    }
+
+    pointerLockInit(camera: THREE.PerspectiveCamera) {
+        this.camera = camera;
+        this.pointerLock = new PointerLockControls(this.camera, document.body);
+
+        // Add event listeners for lock changes
+        document.addEventListener('pointerlockchange', this.onPointerLockChange.bind(this));
+        document.addEventListener('pointerlockerror', this.onPointerLockError.bind(this));
+    }
+
+    onPointerLockChange() {
+        // Handle lock state changes if needed
+    }
+
+    onPointerLockError(event: Event) {
+        console.error("Pointer lock error:", event);
     }
 
     handleKeyUp(event: KeyboardEvent) {
@@ -83,7 +101,7 @@ export default class Controls {
             );
         }
         this.playerSelectionHelper.position.copy(point);
-        this.playerSelectionHelper.scale.set(1.2, 1.2, 1.2);
+        this.playerSelectionHelper.scale.set(1.005, 1.005, 1.005);
         scene.add(this.playerSelectionHelper);
     }
 
@@ -110,6 +128,26 @@ export default class Controls {
                 this.addPlayerSelectionHelper(world, this.selectedCoordinate || new THREE.Vector3());
             }
         }
+    }
+
+    //mouse controls
+    onMouseDown(event: MouseEvent) {
+        if (!this.isLocked) return;
+
+        if (event.button === 0) { // Left click
+            if (this.selectedCoordinate) {
+                console.log("Selected Coordinate:", this.selectedCoordinate);
+                this.world.removeBlock(this.selectedCoordinate);
+                this.removePlayerSelectionHelper(this.world);
+            }
+        }
+        //  else if (event.button === 2) { // Right click
+        //     if (this.selectedCoordinate) {
+        //         this.world.addBlock(this.selectedCoordinate);
+        //         this.removePlayerSelectionHelper(this.world);
+        //     }
+        // } 
+
     }
 
     update(world: World) {
