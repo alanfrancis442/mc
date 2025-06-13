@@ -19,9 +19,9 @@ export default class World extends THREE.Group {
 
     drawDistance = 2;
 
-    chunkSize: Sizes = { width: 32, height: 32 };
-    constructor(seend: number = 0) {
+    chunkSize: Sizes = { width: 32, height: 32 }; constructor(seed: number = 0) {
         super();
+        this.worldParams.seed = seed;
     }
 
     worldToChunkCoordinates(position: Position) {
@@ -75,12 +75,54 @@ export default class World extends THREE.Group {
     }
 
     removeBlock(position: Position) {
-        const chunkcoord = this.worldToChunkCoordinates(position);
+        const adjustedPosition = {
+            x: position.x + this.chunkSize.width / 2,
+            y: position.y + this.chunkSize.height / 2,
+            z: position.z + this.chunkSize.width / 2
+        };
+        const chunkcoord = this.worldToChunkCoordinates(adjustedPosition);
         const chunk = this.getChunk(chunkcoord.chunkCord.x, chunkcoord.chunkCord.z);
         if (!chunk || !(chunk as WorldChunk).loaded) return;
-        (chunk as WorldChunk).removeBlock({ x: chunkcoord.blockCord.x, y: chunkcoord.blockCord.y, z: chunkcoord.blockCord.z });
+        console.log("removing block at chunk", chunkcoord.blockCord);
+        (chunk as WorldChunk).removeBlock({ x: chunkcoord.blockCord.x, y: chunkcoord.blockCord.y, z: chunkcoord.blockCord.z });        //revealing the adjacent blocks - need to handle cross-chunk boundaries
+        this.revealAdjacentBlock(adjustedPosition.x - 1, adjustedPosition.y, adjustedPosition.z);
+        this.revealAdjacentBlock(adjustedPosition.x + 1, adjustedPosition.y, adjustedPosition.z);
+        this.revealAdjacentBlock(adjustedPosition.x, adjustedPosition.y, adjustedPosition.z - 1);
+        this.revealAdjacentBlock(adjustedPosition.x, adjustedPosition.y, adjustedPosition.z + 1);
+        this.revealAdjacentBlock(adjustedPosition.x, adjustedPosition.y - 1, adjustedPosition.z);
+        this.revealAdjacentBlock(adjustedPosition.x, adjustedPosition.y + 1, adjustedPosition.z);
+
+    } revealBlock(position: Position) {
+        // Position is already in chunk coordinates, so we need to convert it to world coordinates
+        // to find the correct chunk, then convert back to local chunk coordinates
+        const worldPosition = {
+            x: position.x - this.chunkSize.width / 2,
+            y: position.y - this.chunkSize.height / 2,
+            z: position.z - this.chunkSize.width / 2
+        };
+
+        const adjustedPosition = {
+            x: worldPosition.x + this.chunkSize.width / 2,
+            y: worldPosition.y + this.chunkSize.height / 2,
+            z: worldPosition.z + this.chunkSize.width / 2
+        };
+
+        const chunkcoord = this.worldToChunkCoordinates(adjustedPosition);
+        const chunk = this.getChunk(chunkcoord.chunkCord.x, chunkcoord.chunkCord.z);
+
+        if (!chunk || !(chunk as WorldChunk).loaded) return;
+
+        (chunk as WorldChunk).addBlockInstance(chunkcoord.blockCord);
     }
 
+    revealAdjacentBlock(x: number, y: number, z: number) {
+        const chunkcoord = this.worldToChunkCoordinates({ x, y, z });
+        const chunk = this.getChunk(chunkcoord.chunkCord.x, chunkcoord.chunkCord.z);
+
+        if (!chunk || !(chunk as WorldChunk).loaded) return;
+
+        (chunk as WorldChunk).addBlockInstance(chunkcoord.blockCord);
+    }
 
     disposeChunk() {
         if (this.children.length === 0) return;
