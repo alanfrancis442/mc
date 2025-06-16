@@ -83,7 +83,7 @@ export default class World extends THREE.Group {
         const chunkcoord = this.worldToChunkCoordinates(adjustedPosition);
         const chunk = this.getChunk(chunkcoord.chunkCord.x, chunkcoord.chunkCord.z);
         if (!chunk || !(chunk as WorldChunk).loaded) return;
-        console.log("removing block at chunk", chunkcoord.blockCord);
+        // console.log("removing block at chunk", chunkcoord.blockCord);
         (chunk as WorldChunk).removeBlock({ x: chunkcoord.blockCord.x, y: chunkcoord.blockCord.y, z: chunkcoord.blockCord.z });        //revealing the adjacent blocks - need to handle cross-chunk boundaries
         this.revealAdjacentBlock(adjustedPosition.x - 1, adjustedPosition.y, adjustedPosition.z);
         this.revealAdjacentBlock(adjustedPosition.x + 1, adjustedPosition.y, adjustedPosition.z);
@@ -92,7 +92,8 @@ export default class World extends THREE.Group {
         this.revealAdjacentBlock(adjustedPosition.x, adjustedPosition.y - 1, adjustedPosition.z);
         this.revealAdjacentBlock(adjustedPosition.x, adjustedPosition.y + 1, adjustedPosition.z);
 
-    } revealBlock(position: Position) {
+    }
+    revealBlock(position: Position) {
         // Position is already in chunk coordinates, so we need to convert it to world coordinates
         // to find the correct chunk, then convert back to local chunk coordinates
         const worldPosition = {
@@ -122,13 +123,26 @@ export default class World extends THREE.Group {
         if (!chunk || !(chunk as WorldChunk).loaded) return;
 
         (chunk as WorldChunk).addBlockInstance(chunkcoord.blockCord);
+    } hideAdjacentBlock(x: number, y: number, z: number) {
+        const chunkcoord = this.worldToChunkCoordinates({ x, y, z });
+        const chunk = this.getChunk(chunkcoord.chunkCord.x, chunkcoord.chunkCord.z);
+
+        if (!chunk || !(chunk as WorldChunk).loaded) return;
+
+        const { x: blockX, y: blockY, z: blockZ } = chunkcoord.blockCord;
+
+        // Check if the block exists and is not viewable (should be hidden)
+        const block = (chunk as WorldChunk).getBlock(blockX, blockY, blockZ);
+        if (block && block.id !== 0 && !(chunk as WorldChunk).isBlockViewable(blockX, blockY, blockZ)) {
+            (chunk as WorldChunk).deleteBlockInstance(blockX, blockY, blockZ);
+        }
     }
 
     disposeChunk() {
         if (this.children.length === 0) return;
         this.traverse((child) => {
             if (child instanceof WorldChunk) {
-                console.log("inside world chunk", child);
+                // console.log("inside world chunk", child);
                 if (child.disposeInstance) child.disposeInstance();
             }
             this.clear();
@@ -178,6 +192,31 @@ export default class World extends THREE.Group {
             if (chunk.disposeInstance) chunk.disposeInstance();
             this.remove(chunk);
         }
+    }
+
+    addBlock(position: Position, blockId: number) {
+        const adjustedPosition = {
+            x: position.x + this.chunkSize.width / 2,
+            y: position.y + this.chunkSize.height / 2,
+            z: position.z + this.chunkSize.width / 2
+        };
+        const chunkcoord = this.worldToChunkCoordinates(adjustedPosition);
+        const chunk = this.getChunk(chunkcoord.chunkCord.x, chunkcoord.chunkCord.z);
+        if (!chunk || !(chunk as WorldChunk).loaded) return;
+        (chunk as WorldChunk).addBlock({
+            x: chunkcoord.blockCord.x,
+            y: chunkcoord.blockCord.y,
+            z: chunkcoord.blockCord.z,
+        }
+            ,
+            blockId);       //revealing the adjacent blocks - need to handle cross-chunk boundaries
+        this.hideAdjacentBlock(adjustedPosition.x - 1, adjustedPosition.y, adjustedPosition.z);
+        this.hideAdjacentBlock(adjustedPosition.x + 1, adjustedPosition.y, adjustedPosition.z);
+        this.hideAdjacentBlock(adjustedPosition.x, adjustedPosition.y, adjustedPosition.z - 1);
+        this.hideAdjacentBlock(adjustedPosition.x, adjustedPosition.y, adjustedPosition.z + 1);
+        this.hideAdjacentBlock(adjustedPosition.x, adjustedPosition.y - 1, adjustedPosition.z);
+        this.hideAdjacentBlock(adjustedPosition.x, adjustedPosition.y + 1, adjustedPosition.z);
+
     }
 
     loadChunks(chunksToLoad: ChunkPosition[]) {

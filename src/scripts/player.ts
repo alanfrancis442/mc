@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type World from './World';
 import type Controls from './Controls';
+import { blocks } from './Blocks';
 
 export default class Player {
     camera: THREE.PerspectiveCamera;
@@ -8,6 +9,7 @@ export default class Player {
     velocity = new THREE.Vector3();
     playerBounceHelper!: THREE.Mesh;
     controls: Controls;
+    activeBlockId = blocks.grass.id;
 
     //player properties
     speed = 5.0;
@@ -72,11 +74,6 @@ export default class Player {
             this.velocity.y += this.jumpForce;
             this.onGround = false;
         }
-    }
-
-    removeBlock(point: THREE.Vector3, world: World) {
-        // world.
-
     }
 
     updatePlayerPosition(dt: number) {

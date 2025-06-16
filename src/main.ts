@@ -22,6 +22,7 @@ world.generate();
 canvas.addToScene(world);
 const controls = new Controls(world);
 const player = new Player(canvas.scene, controls);
+controls.initPlayer(player);
 controls.pointerLockInit(player.camera);
 
 // Prevent right-click context menu which can interfere with game controls

@@ -100,7 +100,7 @@ export default class WorldChunk extends THREE.Group {
             blockMesh.count = 0;
             blockMesh.name = block.name;
             blockMesh.userData.blockId = block.id;
-            console.log(`Generating mesh for block: ${block.name} with id: ${block.id}`);
+            // console.log(`Generating mesh for block: ${block.name} with id: ${block.id}`);
             blockMesh.castShadow = true;
             blockMesh.receiveShadow = true;
             meshes[block.id] = blockMesh;
@@ -153,8 +153,8 @@ export default class WorldChunk extends THREE.Group {
 
     deleteBlockInstance(x: number, y: number, z: number) {
         const block = this.getBlock(x, y, z);
-        console.log("block to delete", block);
-        console.log("block to delete", this.children);
+        // console.log("block to delete", block);
+        // console.log("block to delete", this.children);
         if (block && block.instanceId) {
             const instanceId = block.instanceId;
             if (instanceId !== null) {
@@ -165,7 +165,7 @@ export default class WorldChunk extends THREE.Group {
                     console.error(`No mesh found for block id ${block.id} at (${x}, ${y}, ${z})`);
                     return;
                 }
-                console.log("mesh", mesh);
+                // console.log("mesh", mesh);
                 if (mesh instanceof THREE.InstancedMesh) {
                     //getting the last matrix and swapping the instance 
                     const lastMatrix = new THREE.Matrix4();
@@ -181,13 +181,14 @@ export default class WorldChunk extends THREE.Group {
                     mesh.instanceMatrix.needsUpdate = true;
                     mesh.computeBoundingSphere();
                     this.setBlockInstanceId(x, y, z, null);
-                    this.setBlockId(x, y, z, blocks.null_block.id);
+                    // this.setBlockId(x, y, z, blocks.null_block.id);
                     console.log(`Deleted block at (${x}, ${y}, ${z}) with instanceId ${instanceId}`);
                 }
             }
         }
-    } addBlockInstance(position: Position) {
-        console.log("Adding block at position", position);
+    }
+    addBlockInstance(position: Position) {
+        // console.log("Adding block at position", position);
         const { x, y, z } = position;
         const block = this.getBlock(x, y, z);
 
@@ -214,20 +215,29 @@ export default class WorldChunk extends THREE.Group {
             mesh.instanceMatrix.needsUpdate = true;
             mesh.computeBoundingSphere();
 
-            console.log(`Added block instance at (${x}, ${y}, ${z}) with instanceId ${instanceId}`);
+            // console.log(`Added block instance at (${x}, ${y}, ${z}) with instanceId ${instanceId}`);
         } else {
             console.log(`Cannot add block instance at (${x}, ${y}, ${z}): block=${!!block}, id=${block?.id}, instanceId=${block?.instanceId}, viewable=${block ? this.isBlockViewable(x, y, z) : false}`);
+        }
+    }
+
+    addBlock(position: Position, blockId: number) {
+        const { x, y, z } = position;
+        const block = this.getBlock(x, y, z);
+        if (block && block.id === blocks.null_block.id) {
+            this.setBlockId(x, y, z, blockId);
+            this.addBlockInstance(position);
         }
     }
 
     removeBlock(position: Position) {
         const { x, y, z } = position;
         const block = this.getBlock(x, y, z);
-        console.log("block at position", block);
+        // console.log("block at position", block);
         if (block && block.id !== blocks.null_block.id) {
             this.deleteBlockInstance(x, y, z);
             this.setBlockId(x, y, z, blocks.null_block.id);
-            console.log(`Removed block at (${x}, ${y}, ${z})`);
+            // console.log(`Removed block at (${x}, ${y}, ${z})`);
         }
         else {
             console.log(`No block found at (${x}, ${y}, ${z}) to remove.`);
@@ -263,9 +273,9 @@ export default class WorldChunk extends THREE.Group {
             z >= 0 && z < this.size.width
         );
 
-        if (!inBounds) {
-            console.log(`Coordinates out of bounds: (${x}, ${y}, ${z}), bounds: (0-${this.size.width - 1}, 0-${this.size.height - 1}, 0-${this.size.width - 1})`);
-        }
+        // if (!inBounds) {
+        //     console.log(`Coordinates out of bounds: (${x}, ${y}, ${z}), bounds: (0-${this.size.width - 1}, 0-${this.size.height - 1}, 0-${this.size.width - 1})`);
+        // }
 
         return inBounds;
     }
