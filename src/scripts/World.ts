@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import WorldChunk from './WorldChunk';
 import type Player from './player';
+import { WorldDataStore } from './WorldDataStore';
 
 export default class World extends THREE.Group {
     worldParams = {
@@ -9,13 +10,12 @@ export default class World extends THREE.Group {
         scale: 30,
         magnitude: 0.5,
     }
-
-    asyncLoading = false;
-
     chunkData = {
         x: 0,
         z: 0
     }
+
+    asyncLoading = false;
 
     drawDistance = 2;
 
@@ -24,6 +24,7 @@ export default class World extends THREE.Group {
         this.worldParams.seed = seed;
     }
 
+    dataStore = new WorldDataStore();
     worldToChunkCoordinates(position: Position) {
         const chunkCord = {
             x: Math.floor(position.x / this.chunkSize.width),
@@ -52,10 +53,11 @@ export default class World extends THREE.Group {
     }
 
     generate() {
+        this.dataStore.clearChunkData();
         this.disposeChunk();
         for (let x = -1; x <= 1; x++) {
             for (let z = -1; z <= 1; z++) {
-                const chunk = new WorldChunk(this.chunkSize, this.worldParams);
+                const chunk = new WorldChunk(this.chunkSize, this.worldParams, this.dataStore);
                 chunk.position.set(x * this.chunkSize.width, 0, z * this.chunkSize.width);
                 chunk.userData = {
                     x,
@@ -221,7 +223,7 @@ export default class World extends THREE.Group {
 
     loadChunks(chunksToLoad: ChunkPosition[]) {
         chunksToLoad.forEach(chunk => {
-            const chunkInstance = new WorldChunk(this.chunkSize, this.worldParams);
+            const chunkInstance = new WorldChunk(this.chunkSize, this.worldParams, this.dataStore);
             chunkInstance.position.set(chunk.x * this.chunkSize.width, 0, chunk.z * this.chunkSize.width);
             chunkInstance.userData = {
                 x: chunk.x,

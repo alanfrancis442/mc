@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { SimplexNoise } from 'three/examples/jsm/Addons.js';
 import { SeedNoise } from './SeedNoise';
 import { blocks, resources } from './Blocks';
+import type { WorldDataStore } from './WorldDataStore';
 
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshStandardMaterial();
@@ -11,11 +12,13 @@ export default class WorldChunk extends THREE.Group {
     data: BlockData = [];
     worldParams: WorldParams;
     loaded: boolean = false;
+    dataStore: WorldDataStore;
     // threshold: number = 0.5;
-    constructor(size: Sizes = { width: 32, height: 32 }, worldParams: WorldParams) {
+    constructor(size: Sizes = { width: 32, height: 32 }, worldParams: WorldParams, dataStore: WorldDataStore) {
         super();
         this.size = size;
         this.worldParams = worldParams;
+        this.dataStore = dataStore;
     }
 
     generate() {
@@ -23,6 +26,7 @@ export default class WorldChunk extends THREE.Group {
         this.initTerrain();
         this.generateResources(seedNoise);
         this.generateTerrain(seedNoise);
+        this.loadPlayerChanges();
         this.generateMeshes();
         this.loaded = true;
     }
@@ -131,7 +135,22 @@ export default class WorldChunk extends THREE.Group {
             }
         }
         this.add(...Object.values(meshes));
-    }    //helper functions
+    }
+
+    loadPlayerChanges() {
+        for (let x = 0; x < this.size.width; x++) {
+            for (let y = 0; y < this.size.height; y++) {
+                for (let z = 0; z < this.size.width; z++) {
+                    if (this.dataStore.containsKey(this.position.x, this.position.z, x, y, z)) {
+                        const blockId = this.dataStore.getData(this.position.x, this.position.z, x, y, z);
+                        this.setBlockId(x, y, z, blockId);
+                    }
+                }
+            }
+        }
+    }
+
+    //helper functions
 
     // Convert local grid coordinates to world coordinates
     gridToWorld(gridPos: { x: number, y: number, z: number }) {
@@ -227,6 +246,7 @@ export default class WorldChunk extends THREE.Group {
         if (block && block.id === blocks.null_block.id) {
             this.setBlockId(x, y, z, blockId);
             this.addBlockInstance(position);
+            this.dataStore.setData(this.position.x, this.position.z, x, y, z, blockId);
         }
     }
 
@@ -238,6 +258,7 @@ export default class WorldChunk extends THREE.Group {
             this.deleteBlockInstance(x, y, z);
             this.setBlockId(x, y, z, blocks.null_block.id);
             // console.log(`Removed block at (${x}, ${y}, ${z})`);
+            this.dataStore.setData(this.position.x, this.position.z, x, y, z, blocks.null_block.id);
         }
         else {
             console.log(`No block found at (${x}, ${y}, ${z}) to remove.`);
